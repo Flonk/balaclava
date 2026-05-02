@@ -97,6 +97,8 @@ Run `balaclava --help` for all options.
 
 made with <3 by [t3.at](https://t3.at).
 
-## Credits
+## Acknowledgements
+
+[Cava](https://github.com/karlstav/cava) is of course the OG and the inspiration for balaclava; balaclava is more or less a direct fork of it. The goal of balaclava is to improve on the original by reducing latency as much as possible to get snappier visuals, and also add new post-processing so we can provide nicer-looking defaults.
 
 Music: Tomas Novoa - Seis Continentes
