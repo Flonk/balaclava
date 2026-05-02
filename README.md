@@ -1,14 +1,10 @@
-
-
-https://github.com/user-attachments/assets/31196ae2-2fb3-49e5-90e6-cf8df934799e
-
 # Balaclava
 
 ![balaclava](./assets/balaclava.jpg)
 
 Terminal audio visualizer backed by PipeWire.
 
-
+https://github.com/user-attachments/assets/31196ae2-2fb3-49e5-90e6-cf8df934799e
 
 ## Installation
 
