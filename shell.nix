@@ -5,13 +5,11 @@ pkgs.mkShell {
     cmake
     just
     pkg-config
-    qt6.wrapQtAppsHook
   ];
 
   buildInputs = with pkgs; [
-    qt6.qtbase
-    qt6.qtdeclarative
     fftw
+    fftwFloat
     pipewire
   ];
 }

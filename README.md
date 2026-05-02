@@ -1,23 +1,19 @@
 # balaclava
 
-Audio visualizer plugin for QuickShell. Captures audio via PipeWire, runs FFT spectrum analysis, and exposes the data as a QML texture.
+Terminal audio visualizer backed by PipeWire and FFT spectrum analysis.
+
+## Structure
+
+- `libbalaclava/` — shared library: PipeWire audio capture, FFT analysis, visualizer effects
+- `balaclava/` — terminal frontend
 
 ## Dependencies
 
-- Qt 6 (Core, Qml, Quick)
 - PipeWire
 - FFTW3
 
 ## Build
 
 ```sh
-./build.sh
-```
-
-Or manually:
-
-```sh
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+just build
 ```
