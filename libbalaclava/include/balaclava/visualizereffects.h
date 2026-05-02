@@ -20,6 +20,7 @@ private:
     std::vector<float> m_noiseFloor;
     std::vector<float> m_smoothedBars;
     std::vector<float> m_peakBars;
+    std::vector<float> m_displayBars;
 
     float m_smoothingAlpha;
     float m_gravityDecay;

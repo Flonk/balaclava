@@ -12,8 +12,7 @@ static void usage() {
         "\n"
         "Options:\n"
         "  --source [TARGET]       Capture from a source instead of a sink\n"
-        "  --preset tiny|large     Preset (default: large)\n"
-        "  --render oneline|fullscreen\n"
+        "  --render oneline|fullscreen|ascii\n"
         "                          Render mode (default: fullscreen)\n"
         "  --bars N                Number of bars (default: auto)\n"
         "  --bar-width N           Bar width in chars (default: auto)\n"
@@ -42,50 +41,8 @@ static void usage() {
     );
 }
 
-static void apply_preset_tiny(Args& args) {
-    args.render_mode = RenderMode::oneline;
-    args.opts.smoothing_alpha = 0.7;
-    args.opts.gravity_decay = 0.9;
-    args.opts.noise_reduction = 0.5;
-}
-
-static void apply_preset_large(Args& args) {
-    args.render_mode = RenderMode::fullscreen;
-    args.opts.dynamic_falloff = 0.98;
-    args.opts.dynamic_rise = 0.99;
-    args.opts.smoothing_alpha = 1.0;
-    args.opts.gravity_decay = 0.95;
-    args.opts.gravity_rise = 0.8;
-    args.opts.gravity_power = 1.2;
-    args.opts.noise_reduction = 0.0;
-    args.opts.eq_bass = 2.3;
-    args.opts.eq_mid = 1.0;
-    args.opts.eq_treble = 1.4;
-    args.opts.contrast = 2.0;
-    args.opts.monstercat_falloff = 1.6;
-    args.opts.min_frequency = 20.0;
-    args.opts.max_frequency = 12000.0;
-    args.headroom = 1.0f;
-}
-
 Args parse_args(int argc, char* argv[]) {
     Args args;
-
-    // Apply large preset as default
-    apply_preset_large(args);
-
-    // First pass: find --preset and apply it
-    for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "--preset") == 0 && i + 1 < argc) {
-            const char* v = argv[++i];
-            if (std::strcmp(v, "tiny") == 0) apply_preset_tiny(args);
-            else if (std::strcmp(v, "large") == 0) apply_preset_large(args);
-            else { fprintf(stderr, "Unknown preset: %s\n", v); std::exit(1); }
-            break;
-        }
-    }
-
-    // Second pass: explicit args override preset
     for (int i = 1; i < argc; ++i) {
         auto next = [&]() -> const char* {
             if (i + 1 >= argc) {
@@ -98,8 +55,6 @@ Args parse_args(int argc, char* argv[]) {
         if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
             usage();
             std::exit(0);
-        } else if (std::strcmp(argv[i], "--preset") == 0) {
-            ++i;
         } else if (std::strcmp(argv[i], "--source") == 0) {
             args.opts.capture_sink = false;
             if (i + 1 < argc && argv[i + 1][0] != '-') args.opts.target = argv[++i];
@@ -108,6 +63,7 @@ Args parse_args(int argc, char* argv[]) {
             const char* v = next();
             if (std::strcmp(v, "oneline") == 0) args.render_mode = RenderMode::oneline;
             else if (std::strcmp(v, "fullscreen") == 0) args.render_mode = RenderMode::fullscreen;
+            else if (std::strcmp(v, "ascii") == 0) args.render_mode = RenderMode::ascii;
             else { fprintf(stderr, "Unknown render mode: %s\n", v); std::exit(1); }
         } else if (std::strcmp(argv[i], "--bars") == 0) {
             args.opts.bars = std::atoi(next());

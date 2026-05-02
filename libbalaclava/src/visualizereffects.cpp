@@ -65,6 +65,7 @@ void VisualizerEffects::ensureBuffers(int size) {
         m_noiseFloor.assign(size, 0.0f);
         m_smoothedBars.assign(size, 0.0f);
         m_peakBars.assign(size, 0.0f);
+        m_displayBars.assign(size, 0.0f);
     }
 }
 
@@ -136,7 +137,7 @@ void VisualizerEffects::applyTemporalEffects(std::vector<float>& values) {
 
         float peak = m_peakBars[i];
         if (smoothed >= peak) {
-            peak += (smoothed - peak) * (1.0f - m_gravityRise);
+            peak = smoothed;
         } else {
             const float diff = std::clamp(peak - smoothed, 0.0f, 1.0f);
             const float releaseFactor = 1.0f + std::pow(diff, m_gravityPower) * kDecayScale;
@@ -150,7 +151,16 @@ void VisualizerEffects::applyTemporalEffects(std::vector<float>& values) {
         m_smoothedBars[i] = smoothed;
         m_peakBars[i] = peak;
 
-        values[i] = std::clamp(peak, 0.0f, 1.0f);
+        // Display rises toward peak with inertia, follows peak down immediately
+        float display = m_displayBars[i];
+        if (peak >= display) {
+            display += (peak - display) * (1.0f - m_gravityRise);
+        } else {
+            display = peak;
+        }
+        m_displayBars[i] = display;
+
+        values[i] = std::clamp(display, 0.0f, 1.0f);
     }
 }
 

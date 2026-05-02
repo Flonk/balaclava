@@ -40,7 +40,11 @@ int main(int argc, char *argv[]) {
   // Auto bar count from terminal width unless explicitly set via --bars
   bool bars_auto = (args.opts.bars == 40); // default means auto
   if (bars_auto) {
-    args.opts.bars = bars_for_terminal(term.cols, bar_width, gap);
+    if (args.render_mode == RenderMode::ascii) {
+      args.opts.bars = 32;
+    } else {
+      args.opts.bars = bars_for_terminal(term.cols, bar_width, gap);
+    }
   }
 
   if (args.render_mode == RenderMode::fullscreen) {
@@ -60,7 +64,9 @@ int main(int argc, char *argv[]) {
   std::string frame_buf;
 
   while (bala.poll(values)) {
-    if (args.render_mode == RenderMode::oneline) {
+    if (args.render_mode == RenderMode::ascii) {
+      render_ascii(values);
+    } else if (args.render_mode == RenderMode::oneline) {
       render_oneline(values, bar_width, gap);
     } else {
       if (g_resized.exchange(false)) {

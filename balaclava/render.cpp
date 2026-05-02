@@ -99,6 +99,17 @@ void render_oneline(const std::vector<float>& values, int bar_width, int gap) {
     fflush(stdout);
 }
 
+void render_ascii(const std::vector<float>& values) {
+    // 32 levels: 0-9 a-v
+    static const char levels[] = "0123456789abcdefghijklmnopqrstuv";
+    for (const float& v : values) {
+        int idx = static_cast<int>(v * 31.0f);
+        putchar(levels[std::clamp(idx, 0, 31)]);
+    }
+    putchar('\n');
+    fflush(stdout);
+}
+
 void screen_enter() {
     printf("\033[?1049h");
     printf("\033[?25l");

@@ -20,6 +20,7 @@ void render_fullscreen(const std::vector<float>& values, const Terminal& term,
                        int bar_width, int gap, float headroom, std::string& buf);
 
 void render_oneline(const std::vector<float>& values, int bar_width, int gap);
+void render_ascii(const std::vector<float>& values);
 
 void screen_enter();
 void screen_leave();
