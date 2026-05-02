@@ -1,10 +1,14 @@
+
+
+https://github.com/user-attachments/assets/31196ae2-2fb3-49e5-90e6-cf8df934799e
+
 # Balaclava
 
 ![balaclava](./assets/balaclava.jpg)
 
 Terminal audio visualizer backed by PipeWire.
 
-<video src="https://github.com/Flonk/balaclava/raw/main/assets/video.mp4" width="600" height="150" controls></video>
+
 
 ## Installation
 
