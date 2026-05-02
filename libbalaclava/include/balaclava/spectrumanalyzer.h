@@ -17,6 +17,7 @@ public:
     SpectrumAnalyzer& operator=(const SpectrumAnalyzer&) = delete;
 
     bool consume(const float* samples, std::size_t count, std::vector<float>& outBars);
+    void setBars(int bars);
 
 private:
     void rebuildWindow();
@@ -24,6 +25,9 @@ private:
     bool processFrame(std::vector<float>& outBars);
 
     int m_bars;
+    float m_sampleRate;
+    float m_minFreq;
+    float m_maxFreq;
     float m_dynamicFalloff;
     float m_dynamicRise;
     float m_autoGainFloor;

@@ -12,27 +12,80 @@ static void usage() {
         "\n"
         "Options:\n"
         "  --source [TARGET]       Capture from a source instead of a sink\n"
-        "  --render tiny|big       Render mode (default: tiny)\n"
-        "  --bars N                Number of bars (default: 40)\n"
+        "  --preset tiny|large     Preset (default: large)\n"
+        "  --render oneline|fullscreen\n"
+        "                          Render mode (default: fullscreen)\n"
+        "  --bars N                Number of bars (default: auto)\n"
+        "  --bar-width N           Bar width in chars (default: auto)\n"
+        "  --gap N                 Gap between bars in chars (default: auto)\n"
+        "  --headroom N            Max bar height 0-1 (default: 0.8)\n"
         "  --sample-rate N         Sample rate in Hz (default: 48000)\n"
         "  --frame-size N          FFT frame size (default: 2048)\n"
         "  --hop-size N            FFT hop size (default: 512)\n"
         "  --min-freq N            Min frequency in Hz (default: 20)\n"
         "  --max-freq N            Max frequency in Hz (default: 20000)\n"
-        "  --dynamic-falloff N     Dynamic range falloff 0-1 (default: 0.5)\n"
-        "  --dynamic-rise N        Dynamic range rise 0-1 (default: 0.0005)\n"
+        "  --dynamic-falloff N     Dynamic range falloff 0-1 (default: 0.99)\n"
+        "  --dynamic-rise N        Dynamic range rise 0-1 (default: 0.99)\n"
         "  --auto-gain-floor N     Auto gain floor (default: 0.01)\n"
-        "  --smoothing N           Smoothing alpha 0-1 (default: 0.7)\n"
-        "  --gravity N             Gravity decay 0-1 (default: 0.9)\n"
-        "  --noise-reduction N     Noise reduction 0-1 (default: 0.5)\n"
+        "  --smoothing N           Smoothing alpha 0-1 (default: 1.0)\n"
+        "  --gravity N             Gravity decay 0-1 (default: 0.93)\n"
+        "  --gravity-rise N        Rise inertia 0-1 (default: 0.5)\n"
+        "  --gravity-power N       Gravity easing exponent (default: 6.0)\n"
+        "  --noise-reduction N     Noise reduction 0-1 (default: 1.0)\n"
+        "  --eq-bass N             Bass gain at min freq (default: 3.0)\n"
+        "  --eq-mid N              Mid gain at center (default: 0.8)\n"
+        "  --eq-treble N           Treble gain at max freq (default: 1.8)\n"
+        "  --contrast N            Gamma curve exponent (default: 1.5)\n"
+        "  --monstercat-falloff N  Monstercat falloff factor (default: 1.5)\n"
         "  --no-monstercat         Disable monstercat smoothing\n"
         "  -h, --help              Show this help\n"
     );
 }
 
+static void apply_preset_tiny(Args& args) {
+    args.render_mode = RenderMode::oneline;
+    args.opts.smoothing_alpha = 0.7;
+    args.opts.gravity_decay = 0.9;
+    args.opts.noise_reduction = 0.5;
+}
+
+static void apply_preset_large(Args& args) {
+    args.render_mode = RenderMode::fullscreen;
+    args.opts.dynamic_falloff = 0.98;
+    args.opts.dynamic_rise = 0.99;
+    args.opts.smoothing_alpha = 1.0;
+    args.opts.gravity_decay = 0.95;
+    args.opts.gravity_rise = 0.8;
+    args.opts.gravity_power = 1.2;
+    args.opts.noise_reduction = 0.0;
+    args.opts.eq_bass = 2.3;
+    args.opts.eq_mid = 1.0;
+    args.opts.eq_treble = 1.4;
+    args.opts.contrast = 2.0;
+    args.opts.monstercat_falloff = 1.6;
+    args.opts.min_frequency = 20.0;
+    args.opts.max_frequency = 12000.0;
+    args.headroom = 1.0f;
+}
+
 Args parse_args(int argc, char* argv[]) {
     Args args;
 
+    // Apply large preset as default
+    apply_preset_large(args);
+
+    // First pass: find --preset and apply it
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "--preset") == 0 && i + 1 < argc) {
+            const char* v = argv[++i];
+            if (std::strcmp(v, "tiny") == 0) apply_preset_tiny(args);
+            else if (std::strcmp(v, "large") == 0) apply_preset_large(args);
+            else { fprintf(stderr, "Unknown preset: %s\n", v); std::exit(1); }
+            break;
+        }
+    }
+
+    // Second pass: explicit args override preset
     for (int i = 1; i < argc; ++i) {
         auto next = [&]() -> const char* {
             if (i + 1 >= argc) {
@@ -45,17 +98,25 @@ Args parse_args(int argc, char* argv[]) {
         if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
             usage();
             std::exit(0);
+        } else if (std::strcmp(argv[i], "--preset") == 0) {
+            ++i;
         } else if (std::strcmp(argv[i], "--source") == 0) {
             args.opts.capture_sink = false;
             if (i + 1 < argc && argv[i + 1][0] != '-') args.opts.target = argv[++i];
             else args.opts.target = "@DEFAULT_SOURCE@";
         } else if (std::strcmp(argv[i], "--render") == 0) {
             const char* v = next();
-            if (std::strcmp(v, "tiny") == 0) args.render_mode = RenderMode::tiny;
-            else if (std::strcmp(v, "big") == 0) args.render_mode = RenderMode::big;
+            if (std::strcmp(v, "oneline") == 0) args.render_mode = RenderMode::oneline;
+            else if (std::strcmp(v, "fullscreen") == 0) args.render_mode = RenderMode::fullscreen;
             else { fprintf(stderr, "Unknown render mode: %s\n", v); std::exit(1); }
         } else if (std::strcmp(argv[i], "--bars") == 0) {
             args.opts.bars = std::atoi(next());
+        } else if (std::strcmp(argv[i], "--bar-width") == 0) {
+            args.bar_width = std::atoi(next());
+        } else if (std::strcmp(argv[i], "--gap") == 0) {
+            args.gap = std::atoi(next());
+        } else if (std::strcmp(argv[i], "--headroom") == 0) {
+            args.headroom = static_cast<float>(std::atof(next()));
         } else if (std::strcmp(argv[i], "--sample-rate") == 0) {
             args.opts.sample_rate = std::atof(next());
         } else if (std::strcmp(argv[i], "--frame-size") == 0) {
@@ -76,8 +137,22 @@ Args parse_args(int argc, char* argv[]) {
             args.opts.smoothing_alpha = std::atof(next());
         } else if (std::strcmp(argv[i], "--gravity") == 0) {
             args.opts.gravity_decay = std::atof(next());
+        } else if (std::strcmp(argv[i], "--gravity-rise") == 0) {
+            args.opts.gravity_rise = std::atof(next());
+        } else if (std::strcmp(argv[i], "--gravity-power") == 0) {
+            args.opts.gravity_power = std::atof(next());
         } else if (std::strcmp(argv[i], "--noise-reduction") == 0) {
             args.opts.noise_reduction = std::atof(next());
+        } else if (std::strcmp(argv[i], "--eq-bass") == 0) {
+            args.opts.eq_bass = std::atof(next());
+        } else if (std::strcmp(argv[i], "--eq-mid") == 0) {
+            args.opts.eq_mid = std::atof(next());
+        } else if (std::strcmp(argv[i], "--eq-treble") == 0) {
+            args.opts.eq_treble = std::atof(next());
+        } else if (std::strcmp(argv[i], "--contrast") == 0) {
+            args.opts.contrast = std::atof(next());
+        } else if (std::strcmp(argv[i], "--monstercat-falloff") == 0) {
+            args.opts.monstercat_falloff = std::atof(next());
         } else if (std::strcmp(argv[i], "--no-monstercat") == 0) {
             args.opts.monstercat = false;
         } else if (argv[i][0] == '-') {

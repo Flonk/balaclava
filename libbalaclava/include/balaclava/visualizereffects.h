@@ -23,8 +23,15 @@ private:
 
     float m_smoothingAlpha;
     float m_gravityDecay;
+    float m_gravityRise;
+    float m_gravityPower;
     float m_noiseReduction;
+    float m_contrast;
+    float m_eqBass;
+    float m_eqMid;
+    float m_eqTreble;
     bool m_monstercat;
+    float m_monstercatFalloff;
     float m_noiseFloorMinDecay;
     float m_noiseFloorMaxDecay;
     float m_noiseFloorMinRise;

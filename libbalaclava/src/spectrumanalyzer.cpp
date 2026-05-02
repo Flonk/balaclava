@@ -33,6 +33,9 @@ float applyInOutEase(float normalized, float power) {
 
 SpectrumAnalyzer::SpectrumAnalyzer(const Options& opts)
     : m_bars(std::max(1, opts.bars))
+    , m_sampleRate(static_cast<float>(opts.sample_rate))
+    , m_minFreq(static_cast<float>(opts.min_frequency))
+    , m_maxFreq(static_cast<float>(opts.max_frequency))
     , m_dynamicFalloff(static_cast<float>(opts.dynamic_falloff))
     , m_dynamicRise(static_cast<float>(opts.dynamic_rise))
     , m_autoGainFloor(static_cast<float>(opts.auto_gain_floor))
@@ -56,7 +59,12 @@ SpectrumAnalyzer::SpectrumAnalyzer(const Options& opts)
     }
 
     rebuildWindow();
-    rebuildBinMapping(static_cast<float>(opts.sample_rate), static_cast<float>(opts.min_frequency), static_cast<float>(opts.max_frequency));
+    rebuildBinMapping(m_sampleRate, m_minFreq, m_maxFreq);
+}
+
+void SpectrumAnalyzer::setBars(int bars) {
+    m_bars = std::max(1, bars);
+    rebuildBinMapping(m_sampleRate, m_minFreq, m_maxFreq);
 }
 
 SpectrumAnalyzer::~SpectrumAnalyzer() {

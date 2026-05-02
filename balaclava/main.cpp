@@ -1,46 +1,87 @@
 #include "args.h"
+#include "render.h"
 #include <balaclava/balaclava.h>
 
+#include <atomic>
 #include <csignal>
 #include <cstdio>
+#include <string>
 #include <vector>
 
 static balaclava::Balaclava *g_bala = nullptr;
+static std::atomic<bool> g_resized{false};
 
 static void on_signal(int) {
   if (g_bala)
     g_bala->stop();
 }
 
+static void on_winch(int) {
+  g_resized.store(true, std::memory_order_relaxed);
+}
+
 int main(int argc, char *argv[]) {
   auto args = parse_args(argc, argv);
+
+  Terminal term = get_terminal_size();
+
+  // Resolve auto gap: 0 for oneline, 1 for fullscreen
+  int gap = args.gap;
+  if (gap < 0) {
+    gap = (args.render_mode == RenderMode::fullscreen) ? 1 : 0;
+  }
+
+  // Resolve auto bar width
+  int bar_width = args.bar_width;
+  if (bar_width == 0) {
+    bar_width = (args.render_mode == RenderMode::fullscreen) ? auto_bar_width(term.cols, gap) : 1;
+  }
+
+  // Auto bar count from terminal width unless explicitly set via --bars
+  bool bars_auto = (args.opts.bars == 40); // default means auto
+  if (bars_auto) {
+    args.opts.bars = bars_for_terminal(term.cols, bar_width, gap);
+  }
+
+  if (args.render_mode == RenderMode::fullscreen) {
+    screen_enter();
+  }
 
   balaclava::Balaclava bala(args.opts);
   g_bala = &bala;
 
   std::signal(SIGINT, on_signal);
   std::signal(SIGTERM, on_signal);
+  std::signal(SIGWINCH, on_winch);
 
   bala.start();
 
   std::vector<float> values;
+  std::string frame_buf;
 
   while (bala.poll(values)) {
-    if (args.render_mode == RenderMode::tiny) {
-      printf("\r");
-      for (const float &v : values) {
-        int height = static_cast<int>(v * 8.0f);
-        static const char *blocks[] = {" ",      "\u2581", "\u2582",
-                                       "\u2583", "\u2584", "\u2585",
-                                       "\u2586", "\u2587", "\u2588"};
-        printf("%s", blocks[height]);
-      }
-      fflush(stdout);
+    if (args.render_mode == RenderMode::oneline) {
+      render_oneline(values, bar_width, gap);
     } else {
-      // TODO: big render mode
+      if (g_resized.exchange(false)) {
+        term = get_terminal_size();
+        if (bars_auto) {
+          bar_width = auto_bar_width(term.cols, gap);
+          int new_bars = bars_for_terminal(term.cols, bar_width, gap);
+          bala.setBars(new_bars);
+        }
+        printf("\033[2J");
+        fflush(stdout);
+      }
+      render_fullscreen(values, term, bar_width, gap, args.headroom, frame_buf);
     }
   }
 
-  printf("\n");
+  if (args.render_mode == RenderMode::fullscreen) {
+    screen_leave();
+  } else {
+    printf("\n");
+  }
+
   return 0;
 }

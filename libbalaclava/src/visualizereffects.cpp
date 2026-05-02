@@ -9,8 +9,15 @@ namespace balaclava {
 VisualizerEffects::VisualizerEffects(const Options& opts)
     : m_smoothingAlpha(static_cast<float>(opts.smoothing_alpha))
     , m_gravityDecay(static_cast<float>(opts.gravity_decay))
+    , m_gravityRise(static_cast<float>(opts.gravity_rise))
+    , m_gravityPower(static_cast<float>(opts.gravity_power))
     , m_noiseReduction(static_cast<float>(opts.noise_reduction))
+    , m_contrast(static_cast<float>(opts.contrast))
+    , m_eqBass(static_cast<float>(opts.eq_bass))
+    , m_eqMid(static_cast<float>(opts.eq_mid))
+    , m_eqTreble(static_cast<float>(opts.eq_treble))
     , m_monstercat(opts.monstercat)
+    , m_monstercatFalloff(static_cast<float>(opts.monstercat_falloff))
     , m_noiseFloorMinDecay(static_cast<float>(opts.noise_floor_min_decay))
     , m_noiseFloorMaxDecay(static_cast<float>(opts.noise_floor_max_decay))
     , m_noiseFloorMinRise(static_cast<float>(opts.noise_floor_min_rise))
@@ -24,7 +31,27 @@ void VisualizerEffects::process(std::vector<float>& values) {
     }
 
     ensureBuffers(values.size());
+
+    if (m_eqBass != 1.0f || m_eqMid != 1.0f || m_eqTreble != 1.0f) {
+        // Quadratic through (0, bass), (0.5, mid), (1.0, treble) in log-freq space
+        const float a = 2.0f * m_eqBass - 4.0f * m_eqMid + 2.0f * m_eqTreble;
+        const float b = -3.0f * m_eqBass + 4.0f * m_eqMid - m_eqTreble;
+        const float c = m_eqBass;
+        const float inv = 1.0f / std::max(1.0f, static_cast<float>(values.size()) - 1.0f);
+        for (size_t i = 0; i < values.size(); ++i) {
+            float t = static_cast<float>(i) * inv;
+            float gain = a * t * t + b * t + c;
+            values[i] = std::clamp(values[i] * std::max(0.0f, gain), 0.0f, 1.0f);
+        }
+    }
+
     applyNoiseReduction(values);
+
+    if (m_contrast != 1.0f) {
+        for (float& v : values) {
+            v = std::pow(v, m_contrast);
+        }
+    }
 
     if (m_monstercat) {
         applyMonstercatFilter(values);
@@ -81,7 +108,7 @@ void VisualizerEffects::applyMonstercatFilter(std::vector<float>& values) {
     scratch.resize(values.size());
     std::copy(values.begin(), values.end(), scratch.begin());
 
-    const float inv = 1.0f / 1.5f;
+    const float inv = 1.0f / m_monstercatFalloff;
     float carry = 0.0f;
     for (size_t i = 0; i < values.size(); ++i) {
         carry = std::max(scratch[i], carry * inv);
@@ -97,7 +124,7 @@ void VisualizerEffects::applyMonstercatFilter(std::vector<float>& values) {
 
 void VisualizerEffects::applyTemporalEffects(std::vector<float>& values) {
     constexpr float kMinValue = 1e-4f;
-    constexpr float kDecayPower = 2.0f;
+    constexpr float kDecayScale = 4.0f;
 
     for (size_t i = 0; i < values.size(); ++i) {
         float current = std::clamp(values[i], 0.0f, 1.0f);
@@ -109,10 +136,10 @@ void VisualizerEffects::applyTemporalEffects(std::vector<float>& values) {
 
         float peak = m_peakBars[i];
         if (smoothed >= peak) {
-            peak = smoothed;
+            peak += (smoothed - peak) * (1.0f - m_gravityRise);
         } else {
             const float diff = std::clamp(peak - smoothed, 0.0f, 1.0f);
-            const float releaseFactor = 1.0f + diff * kDecayPower;
+            const float releaseFactor = 1.0f + std::pow(diff, m_gravityPower) * kDecayScale;
             const float decay = std::pow(std::clamp(m_gravityDecay, 0.0f, 0.9999f), releaseFactor);
             peak = smoothed + (peak - smoothed) * decay;
             if (peak < smoothed) {

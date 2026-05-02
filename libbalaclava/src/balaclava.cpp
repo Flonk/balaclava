@@ -18,6 +18,10 @@ void Balaclava::start() {
     m_collector.start();
 }
 
+void Balaclava::setBars(int bars) {
+    m_analyzer.setBars(bars);
+}
+
 void Balaclava::stop() {
     m_running = false;
     m_dataReady.store(true, std::memory_order_release);

@@ -19,6 +19,7 @@ public:
 
     void start();
     void stop();
+    void setBars(int bars);
 
     void setFrameCallback(FrameCallback cb) { m_frameCallback = std::move(cb); }
 
