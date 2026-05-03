@@ -17,7 +17,7 @@ int bars_for_terminal(int cols, int bar_width, int gap);
 int auto_bar_width(int cols, int gap);
 
 void render_fullscreen(const std::vector<float>& values, const Terminal& term,
-                       int bar_width, int gap, float headroom, std::string& buf);
+                       int bar_width, int gap, float headroom, float beat, std::string& buf);
 
 void render_oneline(const std::vector<float>& values, int bar_width, int gap);
 void render_ascii(const std::vector<float>& values);

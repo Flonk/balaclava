@@ -5,6 +5,11 @@
 
 namespace balaclava {
 
+struct Baclava {
+    std::vector<float> bars;
+    float beat = 0.0f;  // 0.0 = no beat, 1.0 = peak beat intensity
+};
+
 class VisualizerEffects {
 public:
     explicit VisualizerEffects(const Options& opts);
@@ -38,6 +43,7 @@ private:
     float m_noiseFloorMinRise;
     float m_noiseFloorMaxRise;
     float m_noiseFloorClamp;
+
 };
 
 } // namespace balaclava

@@ -4,6 +4,7 @@ namespace balaclava {
 
 Balaclava::Balaclava(const Options& opts)
     : m_collector(opts)
+    , m_beatDetector(opts)
     , m_analyzer(opts)
     , m_effects(opts)
 {
@@ -29,7 +30,7 @@ void Balaclava::stop() {
     m_collector.stop();
 }
 
-bool Balaclava::poll(std::vector<float>& out) {
+bool Balaclava::poll(Baclava& out) {
     float chunk[ac::CHUNK_SIZE];
 
     for (;;) {
@@ -39,13 +40,15 @@ bool Balaclava::poll(std::vector<float>& out) {
         if (!m_running) return false;
 
         m_collector.readChunk(chunk);
+        m_beatDetector.feed(chunk, ac::CHUNK_SIZE);
 
-        if (m_analyzer.consume(chunk, ac::CHUNK_SIZE, out)) {
+        if (m_analyzer.consume(chunk, ac::CHUNK_SIZE, out.bars)) {
             break;
         }
     }
 
-    m_effects.process(out);
+    m_effects.process(out.bars);
+    out.beat = m_beatDetector.beat();
 
     if (m_frameCallback) {
         m_frameCallback(out);

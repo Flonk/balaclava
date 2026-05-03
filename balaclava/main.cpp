@@ -60,14 +60,14 @@ int main(int argc, char *argv[]) {
 
   bala.start();
 
-  std::vector<float> values;
+  balaclava::Baclava frame;
   std::string frame_buf;
 
-  while (bala.poll(values)) {
+  while (bala.poll(frame)) {
     if (args.render_mode == RenderMode::ascii) {
-      render_ascii(values);
+      render_ascii(frame.bars);
     } else if (args.render_mode == RenderMode::oneline) {
-      render_oneline(values, bar_width, gap);
+      render_oneline(frame.bars, bar_width, gap);
     } else {
       if (g_resized.exchange(false)) {
         term = get_terminal_size();
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
         printf("\033[2J");
         fflush(stdout);
       }
-      render_fullscreen(values, term, bar_width, gap, args.headroom, frame_buf);
+      render_fullscreen(frame.bars, term, bar_width, gap, args.headroom, frame.beat, frame_buf);
     }
   }
 

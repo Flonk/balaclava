@@ -12,6 +12,7 @@ pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 add_library(balaclava_lib
     src/balaclava.cpp
     src/audiocollector.cpp
+    src/beatdetector.cpp
     src/spectrumanalyzer.cpp
     src/visualizereffects.cpp
 )

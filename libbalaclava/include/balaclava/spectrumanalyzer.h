@@ -48,7 +48,7 @@ private:
     float* m_fftInput = nullptr;
     fftwf_complex* m_fftOutput = nullptr;
 
-    float m_dynamicMax = 1;
+    float m_dynamicMax = 0;
 };
 
 } // namespace balaclava

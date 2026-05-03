@@ -31,13 +31,20 @@ float applyInOutEase(float normalized, float power) {
 }
 }
 
+static float halflifeToFactor(double halflife_ms, double sample_rate, std::size_t hop_size) {
+    const double fps = sample_rate / static_cast<double>(hop_size);
+    const double frames = halflife_ms / 1000.0 * fps;
+    if (frames <= 0.0) return 0.0f;
+    return static_cast<float>(std::pow(0.5, 1.0 / frames));
+}
+
 SpectrumAnalyzer::SpectrumAnalyzer(const Options& opts)
     : m_bars(std::max(1, opts.bars))
     , m_sampleRate(static_cast<float>(opts.sample_rate))
     , m_minFreq(static_cast<float>(opts.min_frequency))
     , m_maxFreq(static_cast<float>(opts.max_frequency))
-    , m_dynamicFalloff(static_cast<float>(opts.dynamic_falloff))
-    , m_dynamicRise(static_cast<float>(opts.dynamic_rise))
+    , m_dynamicFalloff(halflifeToFactor(opts.dynamic_falloff_ms, opts.sample_rate, opts.hop_size))
+    , m_dynamicRise(1.0f - halflifeToFactor(opts.dynamic_rise_ms, opts.sample_rate, opts.hop_size))
     , m_autoGainFloor(static_cast<float>(opts.auto_gain_floor))
     , m_frameSize(opts.frame_size)
     , m_hopSize(opts.hop_size)

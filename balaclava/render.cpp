@@ -30,8 +30,26 @@ int auto_bar_width(int cols, int gap) {
     return w;
 }
 
+static void append_color(std::string& buf, float t, float beat) {
+    // Gradient from cyan (bottom) to magenta (top), pulsed white on beat
+    int r = static_cast<int>(80 + 175 * t);
+    int g = static_cast<int>(220 - 180 * t);
+    int b = 255;
+
+    // Pulse toward white on beat
+    if (beat > 0.0f) {
+        r = r + static_cast<int>((255 - r) * beat);
+        g = g + static_cast<int>((255 - g) * beat);
+        b = b + static_cast<int>((255 - b) * beat);
+    }
+
+    char color[24];
+    int n = snprintf(color, sizeof(color), "\033[38;2;%d;%d;%dm", r, g, b);
+    buf.append(color, n);
+}
+
 void render_fullscreen(const std::vector<float>& values, const Terminal& term,
-                       int bar_width, int gap, float headroom, std::string& buf) {
+                       int bar_width, int gap, float headroom, float beat, std::string& buf) {
     buf.clear();
     buf.append("\033[H");
 
@@ -43,10 +61,23 @@ void render_fullscreen(const std::vector<float>& values, const Terminal& term,
 
     for (int row = 0; row < rows; ++row) {
         int row_bottom = (rows - 1 - row) * 8;
+        float row_t = static_cast<float>(row) / std::max(1.0f, static_cast<float>(rows - 1));
+
+        // Flash background on first row when beat detected
+        if (row == 0 && beat > 0.05f) {
+            int bg = static_cast<int>(255 * beat);
+            char bgcol[32];
+            int n = snprintf(bgcol, sizeof(bgcol), "\033[48;2;%d;%d;%dm", bg, bg, bg);
+            buf.append(bgcol, n);
+        } else if (row == 1) {
+            buf.append("\033[49m");
+        }
 
         if (margin > 0) {
             buf.append(margin, ' ');
         }
+
+        append_color(buf, row_t, 0.0f);
 
         for (int bar = 0; bar < bars; ++bar) {
             float height = values[bar] * headroom * static_cast<float>(total_units);
@@ -72,6 +103,7 @@ void render_fullscreen(const std::vector<float>& values, const Terminal& term,
 
         int pad = term.cols - margin - used;
         if (pad > 0) {
+            buf.append("\033[0m");
             buf.append(pad, ' ');
         }
 
@@ -80,6 +112,7 @@ void render_fullscreen(const std::vector<float>& values, const Terminal& term,
         }
     }
 
+    buf.append("\033[0m");
     fwrite(buf.data(), 1, buf.size(), stdout);
     fflush(stdout);
 }

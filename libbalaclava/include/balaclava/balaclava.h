@@ -2,6 +2,7 @@
 
 #include "options.h"
 #include "audiocollector.h"
+#include "beatdetector.h"
 #include "spectrumanalyzer.h"
 #include "visualizereffects.h"
 
@@ -13,7 +14,7 @@ namespace balaclava {
 
 class Balaclava {
 public:
-    using FrameCallback = std::function<void(const std::vector<float>& bars)>;
+    using FrameCallback = std::function<void(const Baclava&)>;
 
     explicit Balaclava(const Options& opts);
 
@@ -25,10 +26,11 @@ public:
 
     // Blocks until data is available, then processes and returns true.
     // Returns false if stopped.
-    bool poll(std::vector<float>& out);
+    bool poll(Baclava& out);
 
 private:
     AudioCollector m_collector;
+    BeatDetector m_beatDetector;
     SpectrumAnalyzer m_analyzer;
     VisualizerEffects m_effects;
     FrameCallback m_frameCallback;

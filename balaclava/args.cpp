@@ -23,12 +23,12 @@ static void usage() {
         "  --hop-size N            FFT hop size (default: 512)\n"
         "  --min-freq N            Min frequency in Hz (default: 20)\n"
         "  --max-freq N            Max frequency in Hz (default: 20000)\n"
-        "  --dynamic-falloff N     Dynamic range falloff 0-1 (default: 0.99)\n"
-        "  --dynamic-rise N        Dynamic range rise 0-1 (default: 0.99)\n"
+        "  --dynamic-falloff N     Peak hold half-life in ms (default: 1000)\n"
+        "  --dynamic-rise N        Rise half-life in ms (default: 50)\n"
         "  --auto-gain-floor N     Auto gain floor (default: 0.01)\n"
-        "  --smoothing N           Smoothing alpha 0-1 (default: 1.0)\n"
+        "  --smoothing N           Smoothing alpha 0-1 (default: 0.65)\n"
         "  --gravity N             Gravity decay 0-1 (default: 0.93)\n"
-        "  --gravity-rise N        Rise inertia 0-1 (default: 0.5)\n"
+        "  --gravity-rise N        Rise inertia 0-1 (default: 0.0)\n"
         "  --gravity-power N       Gravity easing exponent (default: 6.0)\n"
         "  --noise-reduction N     Noise reduction 0-1 (default: 1.0)\n"
         "  --eq-bass N             Bass gain at min freq (default: 3.0)\n"
@@ -37,6 +37,9 @@ static void usage() {
         "  --contrast N            Gamma curve exponent (default: 1.5)\n"
         "  --monstercat-falloff N  Monstercat falloff factor (default: 1.5)\n"
         "  --no-monstercat         Disable monstercat smoothing\n"
+        "  --beat-decay N          Beat intensity decay 0-1 (default: 0.9)\n"
+        "  --beat-gamma N          Beat intensity gamma (default: 2.0)\n"
+        "  --beat-floor N          Max beat floor for clean signals (default: 0.4)\n"
         "  -h, --help              Show this help\n"
     );
 }
@@ -84,9 +87,9 @@ Args parse_args(int argc, char* argv[]) {
         } else if (std::strcmp(argv[i], "--max-freq") == 0) {
             args.opts.max_frequency = std::atof(next());
         } else if (std::strcmp(argv[i], "--dynamic-falloff") == 0) {
-            args.opts.dynamic_falloff = std::atof(next());
+            args.opts.dynamic_falloff_ms = std::atof(next());
         } else if (std::strcmp(argv[i], "--dynamic-rise") == 0) {
-            args.opts.dynamic_rise = std::atof(next());
+            args.opts.dynamic_rise_ms = std::atof(next());
         } else if (std::strcmp(argv[i], "--auto-gain-floor") == 0) {
             args.opts.auto_gain_floor = std::atof(next());
         } else if (std::strcmp(argv[i], "--smoothing") == 0) {
@@ -111,6 +114,12 @@ Args parse_args(int argc, char* argv[]) {
             args.opts.monstercat_falloff = std::atof(next());
         } else if (std::strcmp(argv[i], "--no-monstercat") == 0) {
             args.opts.monstercat = false;
+        } else if (std::strcmp(argv[i], "--beat-decay") == 0) {
+            args.opts.beat_decay = std::atof(next());
+        } else if (std::strcmp(argv[i], "--beat-gamma") == 0) {
+            args.opts.beat_gamma = std::atof(next());
+        } else if (std::strcmp(argv[i], "--beat-floor") == 0) {
+            args.opts.beat_floor = std::atof(next());
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "Unknown option: %s\n", argv[i]);
             std::exit(1);
