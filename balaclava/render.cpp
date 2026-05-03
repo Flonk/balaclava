@@ -56,57 +56,82 @@ static void append_color(std::string& buf, float t, float beat, const Gradient& 
 
 void render_fullscreen(const std::vector<float>& values, const Terminal& term,
                        int bar_width, int gap, float headroom, float beat,
-                       const Gradient& grad, std::string& buf) {
+                       const Gradient& grad, const NowPlaying& np,
+                       const Padding& pad, std::string& buf) {
     buf.clear();
     buf.append("\033[H");
 
     const int bars = static_cast<int>(values.size());
-    const int rows = term.rows;
-    const int total_units = rows * 8;
+    const int content_rows = term.rows - pad.top - pad.bottom;
+    const int content_cols = term.cols - pad.left - pad.right;
+    const int total_units = content_rows * 8;
     const int used = bars * bar_width + std::max(0, bars - 1) * gap;
-    const int margin = (term.cols - used) / 2;
+    const int inner_margin = std::max(0, (content_cols - used) / 2);
 
-    for (int row = 0; row < rows; ++row) {
-        int row_bottom = (rows - 1 - row) * 8;
-        float row_t = static_cast<float>(row) / std::max(1.0f, static_cast<float>(rows - 1));
+    for (int row = 0; row < term.rows; ++row) {
+        if (row < pad.top || row >= term.rows - pad.bottom) {
+            buf.append(term.cols, ' ');
+        } else {
+            int content_row = row - pad.top;
+            int row_bottom = (content_rows - 1 - content_row) * 8;
+            float row_t = static_cast<float>(content_row) / std::max(1.0f, static_cast<float>(content_rows - 1));
 
-        if (margin > 0) {
-            buf.append(margin, ' ');
-        }
-
-        append_color(buf, row_t, beat, grad);
-
-        for (int bar = 0; bar < bars; ++bar) {
-            float height = values[bar] * headroom * static_cast<float>(total_units);
-            int units_in_row = static_cast<int>(height) - row_bottom;
-
-            const char* ch;
-            if (units_in_row >= 8) {
-                ch = blocks[8];
-            } else if (units_in_row > 0) {
-                ch = blocks[units_in_row];
-            } else {
-                ch = blocks[0];
+            int left = pad.left + inner_margin;
+            if (left > 0) {
+                buf.append(left, ' ');
             }
 
-            for (int w = 0; w < bar_width; ++w) {
-                buf.append(ch);
+            append_color(buf, row_t, beat, grad);
+
+            for (int bar = 0; bar < bars; ++bar) {
+                float height = values[bar] * headroom * static_cast<float>(total_units);
+                int units_in_row = static_cast<int>(height) - row_bottom;
+
+                const char* ch;
+                if (units_in_row >= 8) {
+                    ch = blocks[8];
+                } else if (units_in_row > 0) {
+                    ch = blocks[units_in_row];
+                } else {
+                    ch = blocks[0];
+                }
+
+                for (int w = 0; w < bar_width; ++w) {
+                    buf.append(ch);
+                }
+
+                if (bar < bars - 1 && gap > 0) {
+                    buf.append(gap, ' ');
+                }
             }
 
-            if (bar < bars - 1 && gap > 0) {
-                buf.append(gap, ' ');
+            int remaining = term.cols - left - used;
+            if (remaining > 0) {
+                buf.append("\033[0m");
+                buf.append(remaining, ' ');
             }
         }
 
-        int pad = term.cols - margin - used;
-        if (pad > 0) {
-            buf.append("\033[0m");
-            buf.append(pad, ' ');
-        }
-
-        if (row < rows - 1) {
+        if (row < term.rows - 1) {
             buf.push_back('\n');
         }
+    }
+
+    // MPRIS overlay top-right, respecting padding
+    if (!np.title.empty() && pad.top > 0) {
+        std::string label = np.artist.empty() ? np.title : np.artist + " \xe2\x80\x94 " + np.title;
+        int len = static_cast<int>(label.size());
+        int max_len = term.cols - pad.left - pad.right;
+        if (len > max_len) {
+            label = label.substr(0, max_len);
+            len = max_len;
+        }
+        int col = term.cols - pad.right - len + 1;
+        char pos[16];
+        int pn = snprintf(pos, sizeof(pos), "\033[%d;%dH", pad.top + 1, col);
+        buf.append(pos, pn);
+        buf.append("\033[38;2;80;80;80m");
+        buf.append(label);
     }
 
     buf.append("\033[0m");

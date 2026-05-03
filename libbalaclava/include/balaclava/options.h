@@ -41,8 +41,8 @@ struct Options {
 
     // Beat detection
     double beat_decay = 0.9;        // beat intensity decay per frame
-    double beat_gamma = 2.0;        // gamma curve on beat intensity (>1 suppresses weak beats)
-    double beat_floor = 0.4;        // max beat floor for clean signals (0-1)
+    double beat_gamma = 1.6;        // gamma curve on beat intensity (>1 suppresses weak beats)
+    double beat_floor = 0.6;        // max beat floor for clean signals (0-1)
 };
 
 } // namespace balaclava

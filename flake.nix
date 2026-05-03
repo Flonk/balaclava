@@ -36,6 +36,7 @@
           ];
 
           buildInputs = with pkgs; [
+            dbus
             fftwFloat
             pipewire
           ];
@@ -57,6 +58,7 @@
             pkg-config
           ];
           buildInputs = with pkgs; [
+            dbus
             fftw
             fftwFloat
             pipewire

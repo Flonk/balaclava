@@ -15,6 +15,10 @@ struct Args {
     int bar_width = 0;     // 0 = auto
     int gap = -1;          // -1 = auto (0 for oneline, 1 for fullscreen)
     float headroom = 1.0f;
+    int pad_top = 1;
+    int pad_left = 1;
+    int pad_bottom = 1;
+    int pad_right = 1;
 
     // 2D gradient: bottom/top × no-beat/beat
     Color color_lo      = {0x33, 0x33, 0x33};
