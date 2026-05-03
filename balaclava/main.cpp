@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
 
   balaclava::Baclava frame;
   std::string frame_buf;
+  Gradient grad = {args.color_lo, args.color_hi, args.color_beat_lo, args.color_beat_hi};
 
   while (bala.poll(frame)) {
     if (args.render_mode == RenderMode::ascii) {
@@ -79,7 +80,7 @@ int main(int argc, char *argv[]) {
         printf("\033[2J");
         fflush(stdout);
       }
-      render_fullscreen(frame.bars, term, bar_width, gap, args.headroom, frame.beat, frame_buf);
+      render_fullscreen(frame.bars, term, bar_width, gap, args.headroom, frame.beat, grad, frame_buf);
     }
   }
 

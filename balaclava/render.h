@@ -1,5 +1,6 @@
 #pragma once
 
+#include "args.h"
 #include <string>
 #include <vector>
 
@@ -16,8 +17,13 @@ int bars_for_terminal(int cols, int bar_width, int gap);
 // Pick smallest bar_width (starting at 2) that keeps bar count <= 32
 int auto_bar_width(int cols, int gap);
 
+struct Gradient {
+    Color lo, hi, beat_lo, beat_hi;
+};
+
 void render_fullscreen(const std::vector<float>& values, const Terminal& term,
-                       int bar_width, int gap, float headroom, float beat, std::string& buf);
+                       int bar_width, int gap, float headroom, float beat,
+                       const Gradient& grad, std::string& buf);
 
 void render_oneline(const std::vector<float>& values, int bar_width, int gap);
 void render_ascii(const std::vector<float>& values);

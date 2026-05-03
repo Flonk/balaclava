@@ -4,6 +4,13 @@
 #include <cstdlib>
 #include <cstring>
 
+static Color parse_hex(const char* s) {
+    // Skip optional '#'
+    if (s[0] == '#') ++s;
+    unsigned int v = static_cast<unsigned int>(strtoul(s, nullptr, 16));
+    return {static_cast<uint8_t>(v >> 16), static_cast<uint8_t>(v >> 8), static_cast<uint8_t>(v)};
+}
+
 static void usage() {
     fprintf(stderr,
         "Usage: balaclava [OPTIONS] [TARGET]\n"
@@ -40,6 +47,10 @@ static void usage() {
         "  --beat-decay N          Beat intensity decay 0-1 (default: 0.9)\n"
         "  --beat-gamma N          Beat intensity gamma (default: 2.0)\n"
         "  --beat-floor N          Max beat floor for clean signals (default: 0.4)\n"
+        "  --color-lo HEX         Bottom color (default: 333333)\n"
+        "  --color-hi HEX         Top color (default: 999999)\n"
+        "  --color-beat-lo HEX    Bottom color on beat (default: E78A53)\n"
+        "  --color-beat-hi HEX    Top color on beat (default: FBCB97)\n"
         "  -h, --help              Show this help\n"
     );
 }
@@ -120,6 +131,14 @@ Args parse_args(int argc, char* argv[]) {
             args.opts.beat_gamma = std::atof(next());
         } else if (std::strcmp(argv[i], "--beat-floor") == 0) {
             args.opts.beat_floor = std::atof(next());
+        } else if (std::strcmp(argv[i], "--color-lo") == 0) {
+            args.color_lo = parse_hex(next());
+        } else if (std::strcmp(argv[i], "--color-hi") == 0) {
+            args.color_hi = parse_hex(next());
+        } else if (std::strcmp(argv[i], "--color-beat-lo") == 0) {
+            args.color_beat_lo = parse_hex(next());
+        } else if (std::strcmp(argv[i], "--color-beat-hi") == 0) {
+            args.color_beat_hi = parse_hex(next());
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "Unknown option: %s\n", argv[i]);
             std::exit(1);

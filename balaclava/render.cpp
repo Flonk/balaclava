@@ -30,26 +30,33 @@ int auto_bar_width(int cols, int gap) {
     return w;
 }
 
-static void append_color(std::string& buf, float t, float beat) {
-    // Gradient from cyan (bottom) to magenta (top), pulsed white on beat
-    int r = static_cast<int>(80 + 175 * t);
-    int g = static_cast<int>(220 - 180 * t);
-    int b = 255;
+static uint8_t mix(uint8_t a, uint8_t b, float t) {
+    return static_cast<uint8_t>(a + (b - a) * t);
+}
 
-    // Pulse toward white on beat
+static void append_color(std::string& buf, float t, float beat, const Gradient& g) {
+    // Bilinear: interpolate bottom→top, then blend toward beat colors
+    uint8_t r0 = mix(g.lo.r, g.hi.r, t);
+    uint8_t g0 = mix(g.lo.g, g.hi.g, t);
+    uint8_t b0 = mix(g.lo.b, g.hi.b, t);
+
     if (beat > 0.0f) {
-        r = r + static_cast<int>((255 - r) * beat);
-        g = g + static_cast<int>((255 - g) * beat);
-        b = b + static_cast<int>((255 - b) * beat);
+        uint8_t r1 = mix(g.beat_lo.r, g.beat_hi.r, t);
+        uint8_t g1 = mix(g.beat_lo.g, g.beat_hi.g, t);
+        uint8_t b1 = mix(g.beat_lo.b, g.beat_hi.b, t);
+        r0 = mix(r0, r1, beat);
+        g0 = mix(g0, g1, beat);
+        b0 = mix(b0, b1, beat);
     }
 
     char color[24];
-    int n = snprintf(color, sizeof(color), "\033[38;2;%d;%d;%dm", r, g, b);
+    int n = snprintf(color, sizeof(color), "\033[38;2;%d;%d;%dm", r0, g0, b0);
     buf.append(color, n);
 }
 
 void render_fullscreen(const std::vector<float>& values, const Terminal& term,
-                       int bar_width, int gap, float headroom, float beat, std::string& buf) {
+                       int bar_width, int gap, float headroom, float beat,
+                       const Gradient& grad, std::string& buf) {
     buf.clear();
     buf.append("\033[H");
 
@@ -67,7 +74,7 @@ void render_fullscreen(const std::vector<float>& values, const Terminal& term,
             buf.append(margin, ' ');
         }
 
-        append_color(buf, row_t, beat);
+        append_color(buf, row_t, beat, grad);
 
         for (int bar = 0; bar < bars; ++bar) {
             float height = values[bar] * headroom * static_cast<float>(total_units);
