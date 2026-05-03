@@ -6,9 +6,10 @@
 
 namespace balaclava {
 
-class BeatDetector {
+// BlackLava beat detection system
+class BlackLava {
 public:
-    explicit BeatDetector(const Options& opts);
+    explicit BlackLava(const Options& opts);
 
     // Feed raw audio samples, returns current beat intensity (0-1)
     float feed(const float* samples, std::size_t count);

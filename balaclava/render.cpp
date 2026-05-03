@@ -63,21 +63,11 @@ void render_fullscreen(const std::vector<float>& values, const Terminal& term,
         int row_bottom = (rows - 1 - row) * 8;
         float row_t = static_cast<float>(row) / std::max(1.0f, static_cast<float>(rows - 1));
 
-        // Flash background on first row when beat detected
-        if (row == 0 && beat > 0.05f) {
-            int bg = static_cast<int>(255 * beat);
-            char bgcol[32];
-            int n = snprintf(bgcol, sizeof(bgcol), "\033[48;2;%d;%d;%dm", bg, bg, bg);
-            buf.append(bgcol, n);
-        } else if (row == 1) {
-            buf.append("\033[49m");
-        }
-
         if (margin > 0) {
             buf.append(margin, ' ');
         }
 
-        append_color(buf, row_t, 0.0f);
+        append_color(buf, row_t, beat);
 
         for (int bar = 0; bar < bars; ++bar) {
             float height = values[bar] * headroom * static_cast<float>(total_units);

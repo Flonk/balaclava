@@ -2,7 +2,7 @@
 
 #include "options.h"
 #include "audiocollector.h"
-#include "beatdetector.h"
+#include "blacklava.h"
 #include "spectrumanalyzer.h"
 #include "visualizereffects.h"
 
@@ -30,7 +30,7 @@ public:
 
 private:
     AudioCollector m_collector;
-    BeatDetector m_beatDetector;
+    BlackLava m_beatDetector;
     SpectrumAnalyzer m_analyzer;
     VisualizerEffects m_effects;
     FrameCallback m_frameCallback;
