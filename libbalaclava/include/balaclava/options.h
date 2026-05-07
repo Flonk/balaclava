@@ -6,9 +6,14 @@
 namespace balaclava {
 
 struct Options {
-  // Audio
+  // Audio (primary)
   std::string target = "@DEFAULT_SINK@";
   bool capture_sink = true;
+
+  // Audio (secondary — rendered behind the primary)
+  std::string target2;
+  bool capture_sink2 = true;
+  bool has_secondary = false;
 
   // Spectrum
   int bars = 40;

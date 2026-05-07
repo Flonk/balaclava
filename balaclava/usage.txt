@@ -1,0 +1,62 @@
+Usage: balaclava [OPTIONS]
+
+  -h, --help              Show this help
+
+PipeWire:
+  --sink [TARGET]         Capture from a sink (default: @DEFAULT_SINK@)
+  --source [TARGET]       Capture from a source (default: @DEFAULT_SOURCE@)
+  --sink2 [TARGET]        Secondary sink (rendered behind primary)
+  --source2 [TARGET]      Secondary source (rendered behind primary)
+  --sample-rate N         Sample rate in Hz (default: 48000)
+
+Spectrum:
+  --frame-size N          FFT frame size (default: 2048)
+  --hop-size N            FFT hop size (default: 512)
+  --min-freq N            Min frequency in Hz (default: 20)
+  --max-freq N            Max frequency in Hz (default: 20000)
+  --dynamic-falloff N     Peak hold half-life in ms (default: 1000)
+  --dynamic-rise N        Rise half-life in ms (default: 50)
+  --auto-gain-floor N     Auto gain floor (default: 0.01)
+
+Display:
+  --render oneline|fullscreen|ascii
+                          Render mode (default: fullscreen)
+  --bars N                Number of bars (default: auto)
+  --bar-width N           Bar width in chars (default: auto)
+  --gap N                 Gap between bars in chars (default: auto)
+  --headroom N            Max bar height 0-1 (default: 0.8)
+  --pad-top N             Top padding in rows (default: 1)
+  --pad-left N            Left padding in cols (default: 1)
+  --pad-bottom N          Bottom padding in rows (default: 1)
+  --pad-right N           Right padding in cols (default: 1)
+
+  --color-lo HEX          Bottom color (default: 333333)
+  --color-hi HEX          Top color (default: 999999)
+  --color-beat-lo HEX     Bottom color on beat (default: E78A53)
+  --color-beat-hi HEX     Top color on beat (default: FBCB97)
+
+  --color-lo2 HEX         Secondary bottom color (default: 181822)
+  --color-hi2 HEX         Secondary top color (default: 303044)
+  --color-beat-lo2 HEX    Secondary bottom color on beat (default: A0603A)
+  --color-beat-hi2 HEX    Secondary top color on beat (default: C09060)
+
+Effects:
+  --smoothing N           Smoothing alpha 0-1 (default: 0.65)
+  --gravity N             Gravity decay 0-1 (default: 0.93)
+  --gravity-rise N        Rise inertia 0-1 (default: 0.0)
+  --gravity-power N       Gravity easing exponent (default: 6.0)
+  --noise-reduction N     Noise reduction 0-1 (default: 1.0)
+  --eq-bass N             Bass gain at min freq (default: 3.0)
+  --eq-mid N              Mid gain at center (default: 0.8)
+  --eq-treble N           Treble gain at max freq (default: 1.8)
+  --contrast N            Gamma curve exponent (default: 1.5)
+  --monstercat-falloff N  Monstercat falloff factor (default: 1.5)
+  --no-monstercat         Disable monstercat smoothing
+
+Beat detection:
+  --beat-detection-off    Disable beat detection
+  --beat-detection-off2   Disable beat detection for secondary (default: off)
+
+  --beat-decay N          Beat intensity decay 0-1 (default: 0.9)
+  --beat-gamma N          Beat intensity gamma (default: 1.6)
+  --beat-floor N          Max beat floor for clean signals (default: 0.6)
