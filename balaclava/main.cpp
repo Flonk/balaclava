@@ -18,9 +18,7 @@ static void on_signal(int) {
     g_bala->stop();
 }
 
-static void on_winch(int) {
-  g_resized.store(true, std::memory_order_relaxed);
-}
+static void on_winch(int) { g_resized.store(true, std::memory_order_relaxed); }
 
 int main(int argc, char *argv[]) {
   auto args = parse_args(argc, argv);
@@ -40,7 +38,9 @@ int main(int argc, char *argv[]) {
   // Resolve auto bar width
   int bar_width = args.bar_width;
   if (bar_width == 0) {
-    bar_width = (args.render_mode == RenderMode::fullscreen) ? auto_bar_width(content_cols(), gap) : 1;
+    bar_width = (args.render_mode == RenderMode::fullscreen)
+                    ? auto_bar_width(content_cols(), gap)
+                    : 1;
   }
 
   // Auto bar count from terminal width unless explicitly set via --bars
@@ -49,7 +49,8 @@ int main(int argc, char *argv[]) {
     if (args.render_mode == RenderMode::ascii) {
       args.opts.bars = 32;
     } else {
-      int cols = (args.render_mode == RenderMode::fullscreen) ? content_cols() : term.cols;
+      int cols = (args.render_mode == RenderMode::fullscreen) ? content_cols()
+                                                              : term.cols;
       args.opts.bars = bars_for_terminal(cols, bar_width, gap);
     }
   }
@@ -69,7 +70,8 @@ int main(int argc, char *argv[]) {
 
   balaclava::Baclava frame;
   std::string frame_buf;
-  Gradient grad = {args.color_lo, args.color_hi, args.color_beat_lo, args.color_beat_hi};
+  Gradient grad = {args.color_lo, args.color_hi, args.color_beat_lo,
+                   args.color_beat_hi};
 
   NowPlaying np;
   auto last_mpris = std::chrono::steady_clock::now() - std::chrono::seconds(10);
@@ -96,7 +98,8 @@ int main(int argc, char *argv[]) {
         printf("\033[2J");
         fflush(stdout);
       }
-      render_fullscreen(frame.bars, term, bar_width, gap, args.headroom, frame.beat, grad, np, pad, frame_buf);
+      render_fullscreen(frame.bars, term, bar_width, gap, args.headroom,
+                        frame.beat, grad, np, pad, frame_buf);
     }
   }
 

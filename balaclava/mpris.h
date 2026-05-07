@@ -3,8 +3,8 @@
 #include <string>
 
 struct NowPlaying {
-    std::string artist;
-    std::string title;
+  std::string artist;
+  std::string title;
 };
 
 // Query MPRIS for currently playing track.
