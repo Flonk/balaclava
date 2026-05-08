@@ -71,9 +71,6 @@ balaclava --sink easyeffects_sink
 # Capture from microphone
 balaclava --source
 
-# Capture from both speakers and microphone
-balaclava --sink --source2
-
 # One-line mode
 balaclava --render oneline
 
