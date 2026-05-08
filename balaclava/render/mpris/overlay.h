@@ -3,10 +3,11 @@
 #include "../../args/args.h"
 #include "mpris.h"
 #include "../common.h"
-#include "../gradient2d.h"
+#include "../utils/color/ansi.h"
+#include "../utils/color/color.h"
 #include "../fullscreen/framebuffer.h"
 
-#include "../utils.h"
+#include "../utils/string.h"
 
 #include <algorithm>
 #include <cstdio>

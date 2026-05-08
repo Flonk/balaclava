@@ -1,15 +1,42 @@
 #include "args.h"
+#include "../render/utils/color/oklch.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
 static Color parse_hex(const char *s) {
-  if (s[0] == '#')
-    ++s;
+  ++s; // skip '#'
   unsigned int v = static_cast<unsigned int>(strtoul(s, nullptr, 16));
   return {static_cast<uint8_t>(v >> 16), static_cast<uint8_t>(v >> 8),
           static_cast<uint8_t>(v)};
+}
+
+// Parse "L C H" (space-separated floats) as OKLCH -> RGB.
+static Color parse_oklch(const char *s) {
+  char *end;
+  float L = std::strtof(s, &end);
+  float C = std::strtof(end, &end);
+  float H = std::strtof(end, &end);
+  return OklchColor{L, C, H}.to_rgb();
+}
+
+// Parse color: #rrggbb = hex, anything else = OKLCH "L C H".
+static Color parse_color(const char *s) {
+  if (s[0] == '#')
+    return parse_hex(s);
+  return parse_oklch(s);
+}
+
+// Parse color directly to OklchColor (for gradient endpoints).
+static OklchColor parse_color_oklch(const char *s) {
+  if (s[0] == '#')
+    return OklchColor::from_rgb(parse_hex(s));
+  char *end;
+  float L = std::strtof(s, &end);
+  float C = std::strtof(end, &end);
+  float H = std::strtof(end, &end);
+  return {L, C, H};
 }
 
 static void usage() {
@@ -227,13 +254,13 @@ BalaclavaCliOptions parse_args(int argc, char *argv[]) {
     } else if (std::strcmp(argv[i], "--pad-right") == 0) {
       args.pad.right = std::atoi(next());
     } else if (std::strcmp(argv[i], "--bg-color") == 0) {
-      args.bg_color = parse_hex(next());
+      args.bg_color = parse_color(next());
     } else if (std::strcmp(argv[i], "--color-lo") == 0) {
-      args.colors.lo = parse_hex(next());
+      args.colors.lo = parse_color_oklch(next());
     } else if (std::strcmp(argv[i], "--color-hi") == 0) {
-      args.colors.hi = parse_hex(next());
+      args.colors.hi = parse_color_oklch(next());
     } else if (std::strcmp(argv[i], "--beat-color") == 0) {
-      args.beat_color = parse_hex(next());
+      args.beat_color = parse_color(next());
     } else if (std::strcmp(argv[i], "--mpris-mode") == 0) {
       const char *v = next();
       if (std::strcmp(v, "off") == 0)
@@ -252,10 +279,10 @@ BalaclavaCliOptions parse_args(int argc, char *argv[]) {
         args.mpris_bg_auto = true;
       } else {
         args.mpris_bg_auto = false;
-        args.mpris_bg_color = parse_hex(v);
+        args.mpris_bg_color = parse_color(v);
       }
     } else if (std::strcmp(argv[i], "--mpris-bar-color") == 0) {
-      args.mpris_bar_color = parse_hex(next());
+      args.mpris_bar_color = parse_color(next());
     } else if (std::strcmp(argv[i], "--mpris-width") == 0) {
       const char *v = next();
       if (std::strcmp(v, "auto") == 0)
@@ -300,10 +327,10 @@ BalaclavaCliOptions parse_args(int argc, char *argv[]) {
         args.mpris_ui_color_auto = true;
       } else {
         args.mpris_ui_color_auto = false;
-        args.mpris_ui_color = parse_hex(v);
+        args.mpris_ui_color = parse_color(v);
       }
     } else if (std::strcmp(argv[i], "--mpris-color") == 0) {
-      args.mpris_color = parse_hex(next());
+      args.mpris_color = parse_color(next());
     } else if (std::strcmp(argv[i], "--mpris-position") == 0) {
       const char *v = next();
       if (std::strcmp(v, "auto") == 0)
@@ -351,9 +378,9 @@ BalaclavaCliOptions parse_args(int argc, char *argv[]) {
         std::exit(1);
       }
     } else if (std::strcmp(argv[i], "--color-lo2") == 0) {
-      args.bg_colors.lo = parse_hex(next());
+      args.bg_colors.lo = parse_color_oklch(next());
     } else if (std::strcmp(argv[i], "--color-hi2") == 0) {
-      args.bg_colors.hi = parse_hex(next());
+      args.bg_colors.hi = parse_color_oklch(next());
     } else {
       fprintf(stderr, "Unknown option: %s\n", argv[i]);
       std::exit(1);

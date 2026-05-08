@@ -10,3 +10,7 @@ struct Color {
   }
   bool operator!=(const Color &o) const { return !(*this == o); }
 };
+
+inline uint8_t mix(uint8_t a, uint8_t b, float t) {
+  return static_cast<uint8_t>(a + (b - a) * t);
+}

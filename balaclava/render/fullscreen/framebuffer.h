@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../gradient2d.h"
+#include "../utils/color/ansi.h"
+#include "../utils/color/gradient2d.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -120,7 +121,8 @@ struct FrameBuffer {
   /// horizontal: controls whether the gradient t is derived from row or column.
   void flush(std::string &buf, bool full_redraw, bool horizontal, bool has_bg,
              const Padding &pad, Color bg_color, const Gradient2D &colors,
-             const Gradient2D &bg_colors, const char **blk) {
+             const Gradient2D &bg_colors, const char **blk,
+             bool flip_fg = false, bool flip_bg = false) {
     // Reset to known state
     buf.append("\033[0m");
     emit_color(buf, kBgPrefix, bg_color);
@@ -172,8 +174,8 @@ struct FrameBuffer {
           }
           t = std::clamp(t, 0.f, 1.f);
 
-          Color fg_color_v = colors.compute(t);
-          Color bg_sec = bg_colors.compute(t);
+          Color fg_color_v = colors.compute(flip_fg ? 1.f - t : t);
+          Color bg_sec = bg_colors.compute(flip_bg ? 1.f - t : t);
           emit_ansi_cell(buf, c, has_bg, bg_color, fg_color_v, bg_sec, blk);
         }
 

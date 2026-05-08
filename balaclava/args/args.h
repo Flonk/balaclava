@@ -1,7 +1,8 @@
 #pragma once
 
 #include "../render/common.h"
-#include "../render/gradient2d.h"
+#include "../render/utils/color/gradient2d.h"
+#include "../render/utils/color/oklch.h"
 #include <balaclava/options.h>
 
 enum class RenderMode { oneline, fullscreen, ascii };
@@ -31,15 +32,15 @@ struct BalaclavaCliOptions {
   BarAlignment alignment2 = BarAlignment::auto_;
   Tristate baseline = Tristate::auto_;
   Tristate baseline2 = Tristate::auto_;
-  Color bg_color = {0, 0, 0};
+  Color bg_color = OklchColor{0.f, 0.f, 0.f}.to_rgb();
   MprisMode mpris_mode = MprisMode::text;
   MprisPosition mpris_position = MprisPosition::auto_;
-  Color mpris_color = {0x66, 0x66, 0x66};
+  Color mpris_color = OklchColor{0.5f, 0.f, 0.f}.to_rgb();
   bool mpris_ui_color_auto = true;
   Color mpris_ui_color = {};
   bool mpris_bg_auto = true;         // true = use bg_color
-  Color mpris_bg_color = {0, 0, 0};  // only used when mpris_bg_auto is false
-  Color mpris_bar_color = {0x50, 0x50, 0x50};
+  Color mpris_bg_color = OklchColor{0.f, 0.f, 0.f}.to_rgb();
+  Color mpris_bar_color = OklchColor{0.4f, 0.f, 0.f}.to_rgb();
   int mpris_width = 0; // 0 = auto
   MprisOverflow mpris_overflow = MprisOverflow::auto_;
   MprisTextAlign mpris_text_align = MprisTextAlign::auto_;
@@ -47,9 +48,9 @@ struct BalaclavaCliOptions {
   int mpris_pad_v = 0;
   bool hotkeys = true;
   bool volume_scroll = true;
-  Color beat_color = {0xFB, 0xCB, 0x97};
-  Gradient2D colors = {{0x33, 0x33, 0x33}, {0x99, 0x99, 0x99}};
-  Gradient2D bg_colors = {{0x18, 0x18, 0x22}, {0x30, 0x30, 0x44}};
+  Color beat_color = OklchColor{0.88f, 0.1f, 70.f}.to_rgb();
+  Gradient2D colors = {{0.3f, 0.f, 0.f}, {0.7f, 0.f, 0.f}};
+  Gradient2D bg_colors = {{0.28f, 0.03f, 280.f}, {0.15f, 0.02f, 280.f}};
 };
 
 BalaclavaCliOptions parse_args(int argc, char *argv[]);

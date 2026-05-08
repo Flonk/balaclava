@@ -4,10 +4,6 @@
 
 #include <string>
 
-inline uint8_t mix(uint8_t a, uint8_t b, float t) {
-  return static_cast<uint8_t>(a + (b - a) * t);
-}
-
 // Fast uint8_t to decimal string, returns number of chars written.
 inline int u8_to_dec(char *dst, uint8_t v) {
   if (v >= 100) {
@@ -43,14 +39,3 @@ inline void emit_color(std::string &buf, const char *prefix, Color c) {
   tmp[n++] = 'm';
   buf.append(tmp, n);
 }
-
-// 2D gradient: interpolates lo->hi by t, blends toward beat colors by beat
-// t: position 0.0 to 1.0
-// beat: beat intensity 0.0 to 1.0
-struct Gradient2D {
-  Color lo, hi;
-
-  Color compute(float t) const {
-    return {mix(lo.r, hi.r, t), mix(lo.g, hi.g, t), mix(lo.b, hi.b, t)};
-  }
-};

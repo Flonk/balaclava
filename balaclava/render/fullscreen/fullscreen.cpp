@@ -510,7 +510,9 @@ private:
 
     const char **blk = horizontal_ ? hblocks : vblocks;
     fb_.flush(buf, fb_full_, horizontal_, has_bg, opts.pad, opts.bg_color,
-              opts.colors, opts.bg_colors, blk);
+              opts.colors, opts.bg_colors, blk,
+              alignment_ == BarAlignment::start,
+              alignment2_ == BarAlignment::start);
 
     if (mpris_overlay_)
       mpris_overlay_->render(cli);

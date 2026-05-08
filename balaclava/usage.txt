@@ -34,21 +34,28 @@ Display:
   --baseline on|off|auto            Show baseline at bar origin (default: auto)
   --baseline2 on|off|auto           Secondary baseline (default: auto)
 
-  --bg-color HEX                    Background color (default: 000000)
+Colors:
+  Colors accept OKLCH "L C H" or hex "#rrggbb". OKLCH values are lightness
+  (0-1), chroma (0-0.4), and hue (0-360). Gradients interpolate in OKLCH.
 
-  --color-lo HEX                    Bottom color (default: 333333)
-  --color-hi HEX                    Top color (default: 999999)
-  --beat-color HEX                  Beat pulse color (default: FBCB97)
+  Examples:   --color-hi "0.75 0.15 145"   bright green in OKLCH
+              --color-hi "#4ade80"         same green in hex
 
-  --color-lo2 HEX                   Secondary bottom color (default: 181822)
-  --color-hi2 HEX                   Secondary top color (default: 303044)
+  --bg-color COLOR                  Background color (default: 0 0 0)
+
+  --color-lo COLOR                  Gradient low color (default: 0.3 0 0)
+  --color-hi COLOR                  Gradient high color (default: 0.7 0 0)
+  --beat-color COLOR                Beat pulse color (default: 0.88 0.1 70)
+
+  --color-lo2 COLOR                 Secondary gradient low (default: 0.15 0.02 280)
+  --color-hi2 COLOR                 Secondary gradient high (default: 0.28 0.03 280)
 
 MPRIS:
   --mpris-mode MODE                 off, text, full (default: text)
-  --mpris-color HEX                 MPRIS text color (default: 666666)
-  --mpris-ui-color HEX|auto         Button color (default: auto = bar color)
-  --mpris-bg-color HEX|auto         Widget background color (default: auto = bg-color)
-  --mpris-bar-color HEX             Progress bar color (default: 505050)
+  --mpris-color COLOR               MPRIS text color (default: 0.5 0 0)
+  --mpris-ui-color COLOR|auto       Button color (default: auto = bar color)
+  --mpris-bg-color COLOR|auto       Widget background color (default: auto = bg-color)
+  --mpris-bar-color COLOR           Progress bar color (default: 0.4 0 0)
   --mpris-width N|auto              Widget width (default: auto = min(46, 2/3 display))
   --mpris-overflow MODE             ellipsis, marquee, pingpong, auto (default: auto)
   --mpris-text-align A              left, center, right, auto (default: auto)
