@@ -4,6 +4,10 @@
 
 Terminal audio visualizer backed by PipeWire.
 
+Balaclava is still in alpha, so expect breaking changes!
+
+https://github.com/user-attachments/assets/e9560725-a24f-416a-92ba-013f06c85d7e
+
 ## Features
 
 - Real-time FFT-based spectrum visualization via PipeWire
