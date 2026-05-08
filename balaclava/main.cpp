@@ -7,6 +7,7 @@
 #include <clocale>
 #include <csignal>
 #include <cstdio>
+#include <fcntl.h>
 #include <memory>
 #include <unistd.h>
 
@@ -60,6 +61,10 @@ int main(int argc, char *argv[]) {
   auto last_mpris = std::chrono::steady_clock::now() - std::chrono::seconds(10);
   auto last_resize = std::chrono::steady_clock::time_point{};
   bool resize_pending = false;
+
+  // Make stdin non-blocking so read() never stalls the render loop.
+  fcntl(STDIN_FILENO, F_SETFL,
+        fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK);
 
   char stdin_buf[128];
   int stdin_len = 0;
