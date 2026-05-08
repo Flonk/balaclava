@@ -2,7 +2,6 @@
 
 #include "options.h"
 #include <cstddef>
-#include <deque>
 #include <fftw3.h>
 #include <vector>
 
@@ -35,7 +34,8 @@ private:
   const std::size_t m_frameSize;
   const std::size_t m_hopSize;
 
-  std::deque<float> m_fifo;
+  std::vector<float> m_fifo;
+  std::size_t m_fifoOffset = 0;
 
   std::vector<float> m_window;
   std::vector<float> m_magnitudes;

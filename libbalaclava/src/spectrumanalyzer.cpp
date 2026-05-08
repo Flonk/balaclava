@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <new>
 #include <numbers>
 #include <stdexcept>
@@ -74,7 +75,10 @@ SpectrumAnalyzer::SpectrumAnalyzer(const Options &opts)
 }
 
 void SpectrumAnalyzer::setBars(int bars) {
-  m_bars = std::max(1, bars);
+  bars = std::max(1, bars);
+  if (bars == m_bars)
+    return;
+  m_bars = bars;
   rebuildBinMapping(m_sampleRate, m_minFreq, m_maxFreq);
 }
 
@@ -99,17 +103,22 @@ bool SpectrumAnalyzer::consume(const float *samples, std::size_t count,
   m_fifo.insert(m_fifo.end(), samples, samples + count);
 
   bool updated = false;
-  while (m_fifo.size() >= m_frameSize) {
+  while (m_fifo.size() - m_fifoOffset >= m_frameSize) {
     if (processFrame(outBars)) {
       updated = true;
     }
+    m_fifoOffset += m_hopSize;
+  }
 
-    if (m_fifo.size() > m_hopSize) {
-      m_fifo.erase(m_fifo.begin(),
-                   m_fifo.begin() + static_cast<long>(m_hopSize));
-    } else {
-      m_fifo.clear();
+  // Compact: shift remaining data to front
+  if (m_fifoOffset > 0) {
+    std::size_t remaining = m_fifo.size() - m_fifoOffset;
+    if (remaining > 0) {
+      std::memmove(m_fifo.data(), m_fifo.data() + m_fifoOffset,
+                   remaining * sizeof(float));
     }
+    m_fifo.resize(remaining);
+    m_fifoOffset = 0;
   }
 
   return updated;
@@ -180,12 +189,13 @@ void SpectrumAnalyzer::rebuildBinMapping(float sampleRate, float minFreq,
 }
 
 bool SpectrumAnalyzer::processFrame(std::vector<float> &outBars) {
-  if (!m_plan || m_fifo.size() < m_frameSize) {
+  if (!m_plan || m_fifo.size() - m_fifoOffset < m_frameSize) {
     return false;
   }
 
+  const float *src = m_fifo.data() + m_fifoOffset;
   for (std::size_t i = 0; i < m_frameSize; ++i) {
-    m_fftInput[i] = m_fifo[i] * m_window[i];
+    m_fftInput[i] = src[i] * m_window[i];
   }
 
   fftwf_execute(m_plan);

@@ -140,16 +140,84 @@ BalaclavaCliOptions parse_args(int argc, char *argv[]) {
       args.opts.monstercat_falloff = std::atof(next());
     } else if (std::strcmp(argv[i], "--no-monstercat") == 0) {
       args.opts.monstercat = false;
-    } else if (std::strcmp(argv[i], "--beat-detection-off") == 0) {
-      args.beat_detection = false;
-    } else if (std::strcmp(argv[i], "--beat-detection-off2") == 0) {
-      args.beat_detection2 = false;
+    } else if (std::strcmp(argv[i], "--beat-detection") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "on") == 0)
+        args.beat_detection = true;
+      else if (std::strcmp(v, "off") == 0)
+        args.beat_detection = false;
+      else {
+        fprintf(stderr, "--beat-detection expects on|off\n");
+        std::exit(1);
+      }
+    } else if (std::strcmp(argv[i], "--beat-detection2") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "on") == 0)
+        args.beat_detection2 = true;
+      else if (std::strcmp(v, "off") == 0)
+        args.beat_detection2 = false;
+      else {
+        fprintf(stderr, "--beat-detection2 expects on|off\n");
+        std::exit(1);
+      }
     } else if (std::strcmp(argv[i], "--beat-decay") == 0) {
       args.opts.beat_decay = std::atof(next());
     } else if (std::strcmp(argv[i], "--beat-gamma") == 0) {
       args.opts.beat_gamma = std::atof(next());
     } else if (std::strcmp(argv[i], "--beat-floor") == 0) {
       args.opts.beat_floor = std::atof(next());
+    } else if (std::strcmp(argv[i], "--orientation") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "auto") == 0)
+        args.orientation = Orientation::auto_;
+      else if (std::strcmp(v, "vertical") == 0)
+        args.orientation = Orientation::vertical;
+      else if (std::strcmp(v, "horizontal") == 0)
+        args.orientation = Orientation::horizontal;
+      else {
+        fprintf(stderr, "Unknown orientation: %s\n", v);
+        std::exit(1);
+      }
+    } else if (std::strcmp(argv[i], "--alignment") == 0 ||
+               std::strcmp(argv[i], "--alignment2") == 0) {
+      bool is2 = argv[i][11] == '2';
+      const char *v = next();
+      BarAlignment a;
+      if (std::strcmp(v, "auto") == 0)
+        a = BarAlignment::auto_;
+      else if (std::strcmp(v, "end") == 0)
+        a = BarAlignment::end;
+      else if (std::strcmp(v, "start") == 0)
+        a = BarAlignment::start;
+      else if (std::strcmp(v, "middle") == 0)
+        a = BarAlignment::middle;
+      else {
+        fprintf(stderr, "Unknown alignment: %s\n", v);
+        std::exit(1);
+      }
+      if (is2)
+        args.alignment2 = a;
+      else
+        args.alignment = a;
+    } else if (std::strcmp(argv[i], "--baseline") == 0 ||
+               std::strcmp(argv[i], "--baseline2") == 0) {
+      bool is2 = argv[i][10] == '2';
+      const char *v = next();
+      Tristate t;
+      if (std::strcmp(v, "on") == 0)
+        t = Tristate::on;
+      else if (std::strcmp(v, "off") == 0)
+        t = Tristate::off;
+      else if (std::strcmp(v, "auto") == 0)
+        t = Tristate::auto_;
+      else {
+        fprintf(stderr, "--baseline expects on|off|auto\n");
+        std::exit(1);
+      }
+      if (is2)
+        args.baseline2 = t;
+      else
+        args.baseline = t;
     } else if (std::strcmp(argv[i], "--pad-top") == 0) {
       args.pad.top = std::atoi(next());
     } else if (std::strcmp(argv[i], "--pad-left") == 0) {
@@ -158,22 +226,134 @@ BalaclavaCliOptions parse_args(int argc, char *argv[]) {
       args.pad.bottom = std::atoi(next());
     } else if (std::strcmp(argv[i], "--pad-right") == 0) {
       args.pad.right = std::atoi(next());
+    } else if (std::strcmp(argv[i], "--bg-color") == 0) {
+      args.bg_color = parse_hex(next());
     } else if (std::strcmp(argv[i], "--color-lo") == 0) {
       args.colors.lo = parse_hex(next());
     } else if (std::strcmp(argv[i], "--color-hi") == 0) {
       args.colors.hi = parse_hex(next());
-    } else if (std::strcmp(argv[i], "--color-beat-lo") == 0) {
-      args.colors.beat_lo = parse_hex(next());
-    } else if (std::strcmp(argv[i], "--color-beat-hi") == 0) {
-      args.colors.beat_hi = parse_hex(next());
+    } else if (std::strcmp(argv[i], "--beat-color") == 0) {
+      args.beat_color = parse_hex(next());
+    } else if (std::strcmp(argv[i], "--mpris-mode") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "off") == 0)
+        args.mpris_mode = MprisMode::off;
+      else if (std::strcmp(v, "text") == 0)
+        args.mpris_mode = MprisMode::text;
+      else if (std::strcmp(v, "full") == 0)
+        args.mpris_mode = MprisMode::full;
+      else {
+        fprintf(stderr, "Unknown mpris mode: %s\n", v);
+        std::exit(1);
+      }
+    } else if (std::strcmp(argv[i], "--mpris-bg-color") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "auto") == 0) {
+        args.mpris_bg_auto = true;
+      } else {
+        args.mpris_bg_auto = false;
+        args.mpris_bg_color = parse_hex(v);
+      }
+    } else if (std::strcmp(argv[i], "--mpris-bar-color") == 0) {
+      args.mpris_bar_color = parse_hex(next());
+    } else if (std::strcmp(argv[i], "--mpris-width") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "auto") == 0)
+        args.mpris_width = 0;
+      else
+        args.mpris_width = std::atoi(v);
+    } else if (std::strcmp(argv[i], "--mpris-overflow") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "auto") == 0)
+        args.mpris_overflow = MprisOverflow::auto_;
+      else if (std::strcmp(v, "ellipsis") == 0)
+        args.mpris_overflow = MprisOverflow::ellipsis;
+      else if (std::strcmp(v, "marquee") == 0)
+        args.mpris_overflow = MprisOverflow::marquee;
+      else if (std::strcmp(v, "pingpong") == 0)
+        args.mpris_overflow = MprisOverflow::pingpong;
+      else {
+        fprintf(stderr, "Unknown mpris overflow: %s\n", v);
+        std::exit(1);
+      }
+    } else if (std::strcmp(argv[i], "--mpris-text-align") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "auto") == 0)
+        args.mpris_text_align = MprisTextAlign::auto_;
+      else if (std::strcmp(v, "left") == 0)
+        args.mpris_text_align = MprisTextAlign::left;
+      else if (std::strcmp(v, "center") == 0)
+        args.mpris_text_align = MprisTextAlign::center;
+      else if (std::strcmp(v, "right") == 0)
+        args.mpris_text_align = MprisTextAlign::right;
+      else {
+        fprintf(stderr, "Unknown mpris text align: %s\n", v);
+        std::exit(1);
+      }
+    } else if (std::strcmp(argv[i], "--mpris-padding-horizontal") == 0) {
+      args.mpris_pad_h = std::atoi(next());
+    } else if (std::strcmp(argv[i], "--mpris-padding-vertical") == 0) {
+      args.mpris_pad_v = std::atoi(next());
+    } else if (std::strcmp(argv[i], "--mpris-ui-color") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "auto") == 0) {
+        args.mpris_ui_color_auto = true;
+      } else {
+        args.mpris_ui_color_auto = false;
+        args.mpris_ui_color = parse_hex(v);
+      }
+    } else if (std::strcmp(argv[i], "--mpris-color") == 0) {
+      args.mpris_color = parse_hex(next());
+    } else if (std::strcmp(argv[i], "--mpris-position") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "auto") == 0)
+        args.mpris_position = MprisPosition::auto_;
+      else if (std::strcmp(v, "topleft") == 0)
+        args.mpris_position = MprisPosition::topleft;
+      else if (std::strcmp(v, "top") == 0)
+        args.mpris_position = MprisPosition::top;
+      else if (std::strcmp(v, "topright") == 0)
+        args.mpris_position = MprisPosition::topright;
+      else if (std::strcmp(v, "right") == 0)
+        args.mpris_position = MprisPosition::right;
+      else if (std::strcmp(v, "bottomright") == 0)
+        args.mpris_position = MprisPosition::bottomright;
+      else if (std::strcmp(v, "bottom") == 0)
+        args.mpris_position = MprisPosition::bottom;
+      else if (std::strcmp(v, "bottomleft") == 0)
+        args.mpris_position = MprisPosition::bottomleft;
+      else if (std::strcmp(v, "left") == 0)
+        args.mpris_position = MprisPosition::left;
+      else if (std::strcmp(v, "center") == 0)
+        args.mpris_position = MprisPosition::center;
+      else {
+        fprintf(stderr, "Unknown mpris position: %s\n", v);
+        std::exit(1);
+      }
+    } else if (std::strcmp(argv[i], "--hotkeys") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "on") == 0)
+        args.hotkeys = true;
+      else if (std::strcmp(v, "off") == 0)
+        args.hotkeys = false;
+      else {
+        fprintf(stderr, "--hotkeys expects on|off\n");
+        std::exit(1);
+      }
+    } else if (std::strcmp(argv[i], "--volume-scroll") == 0) {
+      const char *v = next();
+      if (std::strcmp(v, "on") == 0)
+        args.volume_scroll = true;
+      else if (std::strcmp(v, "off") == 0)
+        args.volume_scroll = false;
+      else {
+        fprintf(stderr, "--volume-scroll expects on|off\n");
+        std::exit(1);
+      }
     } else if (std::strcmp(argv[i], "--color-lo2") == 0) {
       args.bg_colors.lo = parse_hex(next());
     } else if (std::strcmp(argv[i], "--color-hi2") == 0) {
       args.bg_colors.hi = parse_hex(next());
-    } else if (std::strcmp(argv[i], "--color-beat-lo2") == 0) {
-      args.bg_colors.beat_lo = parse_hex(next());
-    } else if (std::strcmp(argv[i], "--color-beat-hi2") == 0) {
-      args.bg_colors.beat_hi = parse_hex(next());
     } else {
       fprintf(stderr, "Unknown option: %s\n", argv[i]);
       std::exit(1);
